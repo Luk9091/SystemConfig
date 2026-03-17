@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+confirm() {
+	if [[ $1 == "-y" ]]; then
+		return 0
+	elif [[ $1 == "-n" ]]; then
+		return 1
+	fi
+	local response
+	local prompt
+
+	if [[ $# -eq 0 ]]; then
+		prompt="Are you sure?"
+	else
+		prompt="$*"
+	fi
+
+	printf "${prompt} ${YELLOW}[y/N]${NC} " 
+	read -r response < /dev/tty
+
+	case "$response" in
+		[yY][eE][sS]|[yY]) 
+			return 0
+			;;
+		*)
+			return 1
+			;;
+	esac
+}

@@ -1,0 +1,88 @@
+#! /usr/bin/env bash
+
+tex-create(){
+    local TEX_TEMPLATES=$HOME/.config/tex
+    local DESTINATION=$PWD
+    local DOC_TYPE="RAPORT"
+    local VERTICAL_PAGE=false
+    local BIBLIOGRAPHY=false
+    local OVERWRITE=false
+
+    while getopts ":pvbn" opt; do
+        case $opt in
+            t | test)
+                DOC_TYPE="TEST"
+            ;;
+            p)
+                DOC_TYPE="PRESENTATION"
+            ;;
+            r)
+                VERTICAL_PAGE=true
+            ;;
+            b)
+                BIBLIOGRAPHY=true
+            ;;
+            n)
+                OVERWRITE=true
+            ;;
+            *)
+                echo -e "{RED}Invalid arguments{NC}"
+                echo -e "Args list:"
+                echo -e "\t-t -- create test"
+                echo -e "\t-p -- create presentation"
+                echo -e "\t-v -- add vertical pages"
+                echo -e "\t-b -- add bibliography"
+                echo -e "\t-n -- no overwrite"
+                return 1
+            ;;
+        esac
+    done
+
+
+
+    local create_files(){
+        if [[ -f $DESTINATION/main.tex ]]; then
+            if [[ $OVERWRITE == true ]]; then
+            elif ( ! confirm "${RED}Overwrite files?${NC}" ); then
+                return 1
+            fi
+            echo "${ORANGE}Overwrite current main files!${NC}"
+        fi
+
+        mkdir -p ${DESTINATION}/Img
+        mkdir -p ${DESTINATION}/Chapters
+        mkdir -p ${DESTINATION}/Measure
+
+
+        cp "${TEX_TEMPLATES}/agh_logo.jpg" ${DESTINATION}/Img
+        cp "${TEX_TEMPLATES}/.gitignore" ${DESTINATION}
+        cp "${TEX_TEMPLATES}/justfile" ${DESTINATION}
+
+        case $DOC_TYPE in
+            "RAPORT")
+                cp "${TEX_TEMPLATES}/raport_template.tex" ${DESTINATION}/main.tex
+                ;;
+            "PRESENTATION")
+                cp "${TEX_TEMPLATES}/prez.tex" ${DESTINATION}/main.tex
+                ;;
+            "TEST")
+                cp "${TEX_TEMPLATES}/prez.tex" ${DESTINATION}/main.tex
+                ;;
+        esac
+    }
+
+
+    create_files
+
+}
+
+
+
+# Jak w getops powiedzieć że argument jest opcjonalny i nie ma uprzedniej flagi?
+# Przykładowo piszę funkcję, która wykonuje jakieś działa nie na katalogach i domyślnie chciałbym aby wykorzystywana była ścieżka z $PWD jednak chciałbym móc funkcji podesłać nową ścieżkę przez parametr ale bez poprzedzania go flagą.
+# Przykład użycia
+# ```
+# $ my-fun # bez żadnych parametrów
+# $ my-fun /tmp # tylko ścieżka docelowa
+# $ my-fun /tmp -r # ścieżka docelowa i dodatkowy dodatkowy parametr
+# ```

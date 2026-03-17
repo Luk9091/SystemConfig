@@ -1,0 +1,6 @@
+#! /usr/bin/env bash
+
+open(){
+    xdg-open "$@" > /dev/null 2>&1 &
+    disown
+}

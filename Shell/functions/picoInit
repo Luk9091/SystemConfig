@@ -1,0 +1,20 @@
+#! /usr/bin/env bash
+
+
+picoInit(){
+    local PROJECT=""
+    local PICO_PATH="/opt/pico/examples/"
+    local BLINK="Blink"
+    local FREERTOS="FreeRTOS_blink"
+
+    if [[ "--freertos" == $1 ]]; then
+        PROJECT="${PICO_PATH}${FREERTOS}"
+    else
+        PROJECT="${PICO_PATH}${BLINK}"
+    fi
+
+    cp -r "${PROJECT}/main.c" .
+    cp -r "${PROJECT}/CMakeLists.txt" .
+    cp -r "${PROJECT}/LED" .
+    mkdir -p build
+}

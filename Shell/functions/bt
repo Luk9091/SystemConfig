@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+bt() {
+    if (( $# != 2 )); then
+        echo -e "${YELLOW}Usage:${NC} bt [(dis/re)connect] [DEVICE]"
+        return 1
+    fi
+
+    declare -A device=(
+        ["jbl"]='84:D3:52:4D:1E:E3'
+        ["edi"]='CC:14:BC:9B:A4:47'
+        ["mxv"]='D6:4F:84:19:E7:02')
+
+    CMD=$(echo  $1 | tr '[:upper:]' '[:lower:]')
+    DEV_NAME=$(echo  $2 | tr '[:lower:]' '[:upper:]')
+    DEV=$(echo  $2 | tr '[:upper:]' '[:lower:]')
+
+    case $CMD in
+        "c" | "connect")
+            MSG="connect"
+            bluetoothctl connect ${device[${DEV}]} &> /dev/null
+        ;;
+        "d" | "disconnect")
+            MSG="disconnect"
+            bluetoothctl disconnect ${device[${DEV}]} &> /dev/null
+        ;;
+        "r" | "reconnect")
+            bluetoothctl disconnect ${device[${DEV}]} &> /dev/null
+            if [[ $? != 0 ]]; then
+                MSG="disconnect"
+                return 1
+            fi
+            MSG="reconnect"
+            bluetoothctl connect ${device[${DEV}]} &> /dev/null
+        ;;
+        *)
+            echo -e "${RED}Invalid command. Expected: connect, disconnect or reconnect${NC}"
+            return 1
+    esac
+
+    if [[ $? == 0 ]]; then
+        echo -e "${GREEN}Successful ${MSG} to ${DEV_NAME}${NC}"
+    else
+        echo -e "${RED}Cannot ${MSG} to ${DEV_NAME}${NC}"
+    fi
+}

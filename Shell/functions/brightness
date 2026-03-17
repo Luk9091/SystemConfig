@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+brightness() {
+    sudo ddcutil setvcp 10 $1 1&> /dev/null
+    sudo brightnessctl s $1\% 1&> /dev/null
+}

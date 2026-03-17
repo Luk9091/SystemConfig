@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+charToHex(){
+    printf $@ | xxd | awk '{printf "0x" $2 "\n"}'
+}

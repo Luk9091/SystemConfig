@@ -1,0 +1,55 @@
+skip_global_compinit=1
+ENABLE_CORRECTION="true"
+export EDITOR=vim
+setopt appendhistory autocd nobeep extendedglob nomatch notify
+
+
+# Plugins:
+eval "$(zoxide init --cmd cd zsh)"
+source ~/.config/zsh/zsh-autocomplete/zsh-autocomplete.plugin.zsh 
+source ~/.config/zsh/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh
+source ~/.config/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh
+
+# Binds for ZSH autocomplete 
+bindkey "\t" menu-complete "$terminfo[kcbt]" reverse-menu-complete
+bindkey "^[[A" history-beginning-search-backward
+bindkey "^[[B" history-beginning-search-forward
+# bindkey '^R' history-incremental-search-backward
+bindkey "^[[1;5C" forward-word
+bindkey "^[[1;5D" backward-word
+bindkey "^[[1;6C" end-of-line
+bindkey "^[[1;6D" beginning-of-line
+bindkey "^[l"     kill-word
+bindkey "^[h"     backward-kill-word
+
+# Theme:
+eval "$(oh-my-posh init zsh --config ~/.config/zsh/oh-my-posh.yaml)"
+
+# Save history in cache:
+HISTFILE=~/.cache/zsh/history
+if [[ ! -f $HISTFILE ]] then # Creates history file if it doesn't exist
+	mkdir -p ~/.cache/zsh
+	touch "$HISTFILE"
+fi
+HISTSIZE=1000
+SAVEHIST=$HISTSIZE
+HISTDUP=erase
+setopt append_history
+setopt share_history
+setopt hist_ignore_space
+setopt hist_ignore_all_dups
+setopt hist_save_no_dups
+setopt hist_ignore_dups
+setopt hist_find_no_dups
+setopt hist_verify
+setopt hist_expire_dups_first
+
+setopt push_d_ignore_dups
+
+# Load my functions and aliases
+source "$HOME/.config/zsh/colors.sh"
+source "$HOME/.config/zsh/aliases.sh"
+fpath=("$HOME/.config/zsh/functions" $fpath)
+autoload -Uz $fpath[1]/*(:t)
+fpath=("$HOME/.config/zsh/completions" $fpath)
+autoload -Uz compinit && compinit

@@ -1,0 +1,29 @@
+#! /usr/bin/env bash
+#
+# Notification example
+# notify-send "Hello" -u critical -t 10000 -a "Timer" -i "accessories-clock"
+
+timer() {
+    if [[ $# == 0 ]]; then
+        return 1
+    fi
+
+    local ICON="accessories-clock"
+    local NAME="TIMER"
+    local TIMEOUT=$(date -d "1970-01-01 $1 Z" +%s)
+    local DURATION=$(( SECONDS + TIMEOUT ))
+
+    # echo "Timeout:  ${TIMEOUT}"
+    # echo "Current: ${SECONDS} | Duration: ${DURATION}"
+
+    local TIME=$( date --date @$(( DURATION - SECONDS - 3600 )) +"%H:%M:%S" )
+    local ID=$(notify-send "${TIME}" "Funny msg" -a "${NAME}" -t 0 -i "${ICON}" -p)
+
+    while (( DURATION > SECONDS)); do
+        sleep 1
+        TIME=$( date -u --date @$(( DURATION - SECONDS )) +"%H:%M:%S" )
+        notify-send "${TIME}" "Funny msg" -a "${NAME}" -t 0 -i "${ICON}" -r "${ID}"
+    done
+
+    notify-send "TIMEOUT" "Funny msg" -a "${NAME}" -i "${ICON}" -r "${ID}"
+}

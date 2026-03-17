@@ -1,0 +1,5 @@
+#compdef bt
+
+_arguments \
+    "1: :(connect disconnect reconnect c d r)" \
+    "2: :(EDI JBL MVX)"

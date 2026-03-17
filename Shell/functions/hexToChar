@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+hexToChar(){
+    hex=$(printf $@ | sed 's/^0//')
+    printf "\\${hex}" | xxd | awk '{printf $3 "\n"}'
+}

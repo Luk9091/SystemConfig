@@ -1,0 +1,14 @@
+main := "main"
+compiler := "pdflatex"
+default: build
+build_dir := "build"
+figs_dir := "build/figures"
+
+build: ensure-dirs
+    latexmk -pdf -pdflatex="{{compiler}} %O %S" -synctex=1 -interaction=nonstopmode {{main}}.tex -output-directory={{build_dir}} -shell-escape
+
+watch: ensure-dirs
+    latexmk -pvc -pdf -pdflatex="{{compiler}} %O %S" -synctex=1 -interaction=nonstopmode {{main}}.tex -output-directory={{build_dir}} -shell-escape
+
+ensure-dirs:
+    mkdir -p {{figs_dir}}

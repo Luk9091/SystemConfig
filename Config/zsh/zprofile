@@ -1,0 +1,12 @@
+# System configuration
+# export XCURSOR_SIZE=16
+
+# Path addition
+export PATH=$PATH:/home/lukasz/.local/bin
+export PATH=$PATH:/opt/verible/bin
+
+# Microcontroller paths
+export PICO_SDK_PATH=/opt/pico/pico-sdk
+export PICO_FREERTOS_PATH=/opt/pico/FreeRTOS-Kernel
+
+

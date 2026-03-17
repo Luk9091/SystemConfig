@@ -1,0 +1,25 @@
+#! /usr/bin/env bash
+
+copy() {
+    if [ ! -t 0 ]; then
+        wl-copy -n
+
+    elif [ $# -gt 0 ]; then
+        local uri_list=""
+        for file in "$@"; do
+            if [ -e "$file" ]; then
+                uri_list+="file://$(realpath "$file")"$'\n'
+            else
+                echo "Błąd: Plik '$file' nie istnieje." >&2
+                return 1
+            fi
+        done
+
+        echo -n -e "$uri_list" | wl-copy -t text/uri-list
+
+    # 3. Brak danych wejściowych
+    else
+        echo "Użycie: echo 'tekst' | copy  LUB  copy plik1 [plik2 ...]" >&2
+        return 1
+    fi
+}
