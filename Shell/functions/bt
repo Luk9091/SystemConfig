@@ -11,18 +11,32 @@ bt() {
         ["edi"]='CC:14:BC:9B:A4:47'
         ["mxv"]='D6:4F:84:19:E7:02')
 
-    CMD=$(echo  $1 | tr '[:upper:]' '[:lower:]')
-    DEV_NAME=$(echo  $2 | tr '[:lower:]' '[:upper:]')
-    DEV=$(echo  $2 | tr '[:upper:]' '[:lower:]')
+    local audio_device=(
+        "jbl"
+        "edi"
+    )
+
+    local CMD=$(echo  $1 | tr '[:upper:]' '[:lower:]')
+    local DEV_NAME=$(echo  $2 | tr '[:lower:]' '[:upper:]')
+    local DEV=$(echo  $2 | tr '[:upper:]' '[:lower:]')
+    local PACTL_DEV=$(echo $device[$DEV] | tr ':' '_')
 
     case $CMD in
         "c" | "connect")
             MSG="connect"
             bluetoothctl connect ${device[${DEV}]} &> /dev/null
+            if [[ $audio_device[*] =~ $DEV ]]; then
+                echo "Change audio out"
+                pactl set-default-sink "bluez_output.$PACTL_DEV.1"
+            fi
         ;;
         "d" | "disconnect")
             MSG="disconnect"
             bluetoothctl disconnect ${device[${DEV}]} &> /dev/null
+            if [[ $audio_device[*] =~ $DEV ]]; then
+                echo "Change audio out"
+                pactl set-default-sink "alsa_output.pci-0000_65_00.6.analog-stereo "
+            fi
         ;;
         "r" | "reconnect")
             bluetoothctl disconnect ${device[${DEV}]} &> /dev/null
@@ -32,9 +46,13 @@ bt() {
             fi
             MSG="reconnect"
             bluetoothctl connect ${device[${DEV}]} &> /dev/null
+            pactl set-default-sink "bluez_output.$PACTL_DEV.1"
         ;;
         *)
             echo -e "${RED}Invalid command. Expected: connect, disconnect or reconnect${NC}"
+            if [[ $audio_device[*] =~ $DEV ]]; then
+                pactl set-default-sink "bluez_output.$PACTL_DEV.1"
+            fi
             return 1
     esac
 
