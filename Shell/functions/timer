@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#! /usr/bin/env zsh
 #
 # Notification example
 # notify-send "Hello" -u critical -t 10000 -a "Timer" -i "accessories-clock"
@@ -8,22 +8,44 @@ timer() {
         return 1
     fi
 
-    local ICON="accessories-clock"
-    local NAME="TIMER"
-    local TIMEOUT=$(date -d "1970-01-01 $1 Z" +%s)
-    local DURATION=$(( SECONDS + TIMEOUT ))
+    local NAME=""
+    local DTIME=""
+    local MSG=""
+    local APP_NAME="TIMER"
 
-    # echo "Timeout:  ${TIMEOUT}"
-    # echo "Current: ${SECONDS} | Duration: ${DURATION}"
+    local ARGS=$(getopt -o n:m: -l name:,note: --name "timer" -- "$@")
+    eval set -- "$ARGS"
+
+    while true; do
+        case $1 in
+            -n | --name )
+                NAME="$2"
+                APP_NAME="TIMER: ${NAME}"
+                shift 2
+                ;;
+            -m | --note )
+                MSG="$2"
+                shift 2
+                ;;
+            -- )
+                shift
+                break
+                ;;
+        esac
+    done
+    DTIME=$(date -d "1970-01-01 $1 Z" +%s)
+
+    local ICON="accessories-clock"
+    local DURATION=$(( SECONDS + DTIME ))
 
     local TIME=$( date --date @$(( DURATION - SECONDS - 3600 )) +"%H:%M:%S" )
-    local ID=$(notify-send "${TIME}" "Funny msg" -a "${NAME}" -t 0 -i "${ICON}" -p)
+    local ID=$(notify-send "${TIME}" "${MSG}" -a "${APP_NAME}" -t 0 -i "${ICON}" -p)
 
     while (( DURATION > SECONDS)); do
         sleep 1
         TIME=$( date -u --date @$(( DURATION - SECONDS )) +"%H:%M:%S" )
-        notify-send "${TIME}" "Funny msg" -a "${NAME}" -t 0 -i "${ICON}" -r "${ID}"
+        notify-send "${TIME}" "${MSG}" -a "${APP_NAME}" -t 0 -i "${ICON}" -r "${ID}"
     done
 
-    notify-send "TIMEOUT" "Funny msg" -a "${NAME}" -i "${ICON}" -r "${ID}"
+    notify-send "Timeout ${NAME}" "${MSG}" -a "${APP_NAME}" -i "${ICON}" -r "${ID}"
 }

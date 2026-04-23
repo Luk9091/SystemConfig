@@ -26,6 +26,7 @@ bt() {
             MSG="connect"
             bluetoothctl connect ${device[${DEV}]} &> /dev/null
             if [[ $audio_device[*] =~ $DEV ]]; then
+                sleep 5
                 echo "Change audio out"
                 pactl set-default-sink "bluez_output.$PACTL_DEV.1"
             fi
