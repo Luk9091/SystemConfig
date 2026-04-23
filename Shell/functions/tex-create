@@ -8,15 +8,15 @@ tex-create(){
     local BIBLIOGRAPHY=false
     local OVERWRITE=false
 
-    while getopts ":pvbn" opt; do
+    while getopts ":rpvbnt" opt; do
         case $opt in
-            t | test)
+            t)
                 DOC_TYPE="TEST"
             ;;
             p)
                 DOC_TYPE="PRESENTATION"
             ;;
-            r)
+            v)
                 VERTICAL_PAGE=true
             ;;
             b)
@@ -43,6 +43,7 @@ tex-create(){
     local create_files(){
         if [[ -f $DESTINATION/main.tex ]]; then
             if [[ $OVERWRITE == true ]]; then
+                return 0
             elif ( ! confirm "${RED}Overwrite files?${NC}" ); then
                 return 1
             fi
@@ -58,31 +59,57 @@ tex-create(){
         cp "${TEX_TEMPLATES}/.gitignore" ${DESTINATION}
         cp "${TEX_TEMPLATES}/justfile" ${DESTINATION}
 
+        printf "${GREEN}LaTeX project was created: "
         case $DOC_TYPE in
             "RAPORT")
                 cp "${TEX_TEMPLATES}/raport_template.tex" ${DESTINATION}/main.tex
+                echo -e "${YELLOW}raport${NC}"
                 ;;
             "PRESENTATION")
-                cp "${TEX_TEMPLATES}/prez.tex" ${DESTINATION}/main.tex
+                cp "${TEX_TEMPLATES}/prez.tex" "${DESTINATION}/main.tex"
+                cp "${TEX_TEMPLATES}/beamerthemeAGH.sty" "${DESTINATION}"
+                cp "${TEX_TEMPLATES}/beamercolorthemeAGH.sty" "${DESTINATION}"
+                echo -e "${YELLOW}presentation${NC}"
                 ;;
             "TEST")
-                cp "${TEX_TEMPLATES}/prez.tex" ${DESTINATION}/main.tex
+                cp "${TEX_TEMPLATES}/test_template.tex" "${DESTINATION}/main.tex"
+                echo -e "${YELLOW}test${NC}"
                 ;;
         esac
     }
 
+    local addBibliography(){
+        FILE="${DESTINATION}/main.tex"
+
+        ADD_TO_MAIN="\n"
+        ADD_TO_MAIN+="\\\usepackage[polish]{babel}\n"
+        ADD_TO_MAIN+="\\\usepackage{csquotes}\n"
+        ADD_TO_MAIN+="\\\usepackage[sorting=none]{biblatex}\n"
+        ADD_TO_MAIN+="\\\bibliography{bibliography.bib}\n"
+
+        if [[ ! ( -e $FILE ) ]]; then
+            echo -e "${RED}File main.tex not exist${NC}"
+            echo -e "Remember to add ${ORANGE}${ADD_TO_MAIN}${NC} in your main.tex"
+        else
+            if grep -Fxq '\bibliography{bibliography.bib}' "$FILE"; then
+                echo -e "${YELLOW}Latex currently use bibliography${NC}"
+                return 0
+            fi
+
+            LINE=$(awk '/^$/{print NR; exit}' "$FILE")
+            # sed -i "/^$/ {s/^$/$ADD_TO_MAIN/; :a;n;ba}" "$FILE"
+            sed -i "${LINE}s/^$/$ADD_TO_MAIN/" "$FILE"
+
+            echo -e "${GREEN}Add bibliography in line ${LINE}${NC}"
+            touch bibliography.bib
+        fi
+    }
+
+
 
     create_files
+    if [[ $BIBLIOGRAPHY ]]; then
+        addBibliography
+    fi
 
 }
-
-
-
-# Jak w getops powiedzieć że argument jest opcjonalny i nie ma uprzedniej flagi?
-# Przykładowo piszę funkcję, która wykonuje jakieś działa nie na katalogach i domyślnie chciałbym aby wykorzystywana była ścieżka z $PWD jednak chciałbym móc funkcji podesłać nową ścieżkę przez parametr ale bez poprzedzania go flagą.
-# Przykład użycia
-# ```
-# $ my-fun # bez żadnych parametrów
-# $ my-fun /tmp # tylko ścieżka docelowa
-# $ my-fun /tmp -r # ścieżka docelowa i dodatkowy dodatkowy parametr
-# ```
