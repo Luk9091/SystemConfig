@@ -8,6 +8,8 @@ alias functionrc="${EDITOR} ~/.config/zsh/functions/"
 alias poshrc="${EDITOR} ~/.config/zsh/oh-my-posh.yaml"
 alias colorsrc="${EDITOR} ~/.config/zsh/colors.sh"
 alias profilerc="${EDITOR} ~/.zprofile"
+alias clangdrc="${EDITOR} ~/.config/clangd/config.yaml"
+
 alias aghVPN="sudo openvpn $HOME/.config/VPN-AGH.2026.ovpn"
 
 alias reload="source ~/.zprofile; source ~/.zshrc; echo -e '${RED}Reloaded${NC}'"
@@ -28,10 +30,20 @@ alias ll="ls --color=auto -la"
 alias ...="popd >> /dev/null"
 alias bat="batcat"
 
+# Better movements
+for (( i= 0; i < 10; i++ )); do
+    alias -$i="pushd -$i > /dev/null"
+    alias +$i="pushd +$i > /dev/null"
+done
+
 
 # Applications
 alias fd='fdfind'
 alias python="python3"
+
+# AI
+alias translate="ollama run translator"
+alias tlumacz="ollama run tlumacz"
 
 # Devices
 alias brightness_ext="sudo ddcutil setvcp 10"
@@ -41,10 +53,10 @@ alias reset_wifi="sudo modprobe -r mt7921e &&  sudo modprobe mt7921e"
 
 # Microcontroller
 # PICO SDK
-alias PICOprobe='openocd -f interface/cmsis-dap.cfg -c "adapter speed 5000" -f target/rp2040.cfg -s tcl'
-alias PICO2probe='openocd -f interface/cmsis-dap.cfg -c "adapter speed 5000" -f target/rp2350.cfg -s tcl'
-alias PICOprobeC0='openocd -f interface/cmsis-dap.cfg -c "adapter speed 5000" -f target/rp2040.cfg -s tcl -c "target smp disable" -c "targets rp2040.core0"'
-alias PICOprobeC0='openocd -f interface/cmsis-dap.cfg -c "adapter speed 5000" -f target/rp2350.cfg -s tcl -c "target smp disable" -c "targets rp2350.core0"'
+alias PICOprobe='openocd -f interface/cmsis-dap.cfg -c "adapter speed 10000" -f target/rp2040.cfg -s tcl'
+alias PICO2probe='openocd -f interface/cmsis-dap.cfg -c "adapter speed 10000" -f target/rp2350.cfg -s tcl'
+alias PICOprobeC0='openocd -f interface/cmsis-dap.cfg -c "adapter speed 10000" -f target/rp2040.cfg -s tcl -c "target smp disable" -c "targets rp2040.core0"'
+alias PICOprobeC0='openocd -f interface/cmsis-dap.cfg -c "adapter speed 10000" -f target/rp2350.cfg -s tcl -c "target smp disable" -c "targets rp2350.core0"'
 
 # ESP IDF
 alias esp_init="source /opt/esp/esp-idf/export.sh"

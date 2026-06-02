@@ -1,5 +1,10 @@
-#compdef timer
+#compdef timeG
 
-_arguments \
-    "1:'Time format\: HH\:MM\:SS':(00:05:00 00:10:00 00:30:00)"
+_timer() {
+    _arguments -S -A "-*" \
+        "(-n --name)"{-n,--name}"[Timer name]:name: " \
+        "(-m --note)"{-m,--note}"[Additional note]:note: " \
+        "1:Suggestion:(00\:05\:00 00\:10\:00 00\:15\:00 00\:30\:00 01\:00\:00)"
+}
 
+_timer "$@"

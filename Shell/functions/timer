@@ -13,11 +13,18 @@ timer() {
     local MSG=""
     local APP_NAME="TIMER"
 
-    local ARGS=$(getopt -o n:m: -l name:,note: --name "timer" -- "$@")
+    local ARGS=$(getopt -o n:m:h -l name:,note:,help --name "timer" -- "$@")
     eval set -- "$ARGS"
 
     while true; do
         case $1 in
+            -h | --help )
+                echo -e "Time notification command"
+                echo -e "timer HH:MM:SS"
+                echo -e "\t-n\t--name [value]"
+                echo -e "\t-m\t--note [value]"
+                return 0
+                ;;
             -n | --name )
                 NAME="$2"
                 APP_NAME="TIMER: ${NAME}"

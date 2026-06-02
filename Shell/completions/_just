@@ -1,0 +1,18 @@
+#compdef just
+
+_just() {
+    local -a recipes
+    if [[ -n "$_JUST_CACHE" && "$_JUST_CACHE_TIME" -gt $(date +%s) ]]; then
+        recipes="$_JUST_CACHE"
+    else
+        recipes=$(just --list 2>/dev/null)
+        _JUST_CACHE="$recipes"
+        _JUST_CACHE_TIME=$(($(date +%s) + 30))
+    fi
+    recipes=(${(f)"$(just --summary 2>/dev/null)"})
+    _arguments -S -A "-*" \
+        "1:Suggestion:($recipes)" \
+        "*:_arguments:_files"
+}
+
+_just "$@"

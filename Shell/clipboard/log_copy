@@ -1,0 +1,7 @@
+#! /usr/bin/env bash
+
+
+log_copy() {
+    local STORAGE_FILE="./clipboard.txt"
+
+}
