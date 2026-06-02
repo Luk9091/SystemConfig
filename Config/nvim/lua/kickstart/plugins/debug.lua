@@ -6,6 +6,8 @@
 -- be extended to other languages as well. That's why it's called
 -- kickstart.nvim and not kitchen-sink.nvim ;)
 
+
+
 return {
   -- NOTE: Yes, you can install new plugins here!
   'mfussenegger/nvim-dap',
@@ -23,6 +25,7 @@ return {
 
     -- Add your own debuggers here
     'leoluz/nvim-dap-go',
+    'jedrzejboczar/nvim-dap-cortex-debug',
     "mfussenegger/nvim-dap-python",
     "mrcjkb/rustaceanvim",
   },
@@ -37,7 +40,11 @@ return {
         elseif vim.bo.filetype == 'rust' then
           vim.cmd('RustLsp debuggables')
         else
-          dap.continue()
+          if _G.dap_has_run then
+            dap.run_last()
+          else
+            dap.continue()
+          end
         end
       end,
       desc = 'Debug: Start/Continue',
@@ -81,10 +88,15 @@ return {
       desc = 'Debug: Hover Value',
     },
   },
+
+
   config = function()
     local dap = require 'dap'
     local dapui = require 'dapui'
 
+    require('dap-cortex-debug').setup {
+      debug_adapter = 'cortex-debug'
+    }
     require('mason-nvim-dap').setup {
       -- Makes a best effort to setup the various debuggers with
       -- reasonable debug configurations
@@ -98,11 +110,12 @@ return {
       -- online, please don't ask me how to install them :)
       ensure_installed = {
         -- Update this to ensure that you have the debuggers for the langs you want
-        'delve',
+        -- 'delve',
         "python",
         "bash",
         "codelldb",
-        "cortex-debuger",
+        "cortex-debug",
+        "cpptools",
       },
     }
 
@@ -129,28 +142,158 @@ return {
     }
 
     -- Change breakpoint icons
-    -- vim.api.nvim_set_hl(0, 'DapBreak', { fg = '#e51400' })
-    -- vim.api.nvim_set_hl(0, 'DapStop', { fg = '#ffcc00' })
-    -- local breakpoint_icons = vim.g.have_nerd_font
-    --     and { Breakpoint = '', BreakpointCondition = '', BreakpointRejected = '', LogPoint = '', Stopped = '' }
-    --   or { Breakpoint = '●', BreakpointCondition = '⊜', BreakpointRejected = '⊘', LogPoint = '◆', Stopped = '⭔' }
-    -- for type, icon in pairs(breakpoint_icons) do
-    --   local tp = 'Dap' .. type
-    --   local hl = (type == 'Stopped') and 'DapStop' or 'DapBreak'
-    --   vim.fn.sign_define(tp, { text = icon, texthl = hl, numhl = hl })
-    -- end
+    vim.api.nvim_set_hl(0, 'DapBreak', { fg = '#e51400' })
+    vim.api.nvim_set_hl(0, 'DapStop', { fg = '#ffcc00' })
+    local breakpoint_icons = vim.g.have_nerd_font
+    and { Breakpoint = '', BreakpointCondition = '', BreakpointRejected = '', LogPoint = '', Stopped = '' }
+    or { Breakpoint = '●', BreakpointCondition = '⊜', BreakpointRejected = '⊘', LogPoint = '◆', Stopped = '⭔' }
+    for type, icon in pairs(breakpoint_icons) do
+      local tp = 'Dap' .. type
+      local hl = (type == 'Stopped') and 'DapStop' or 'DapBreak'
+      vim.fn.sign_define(tp, { text = icon, texthl = hl, numhl = hl })
+    end
 
     dap.listeners.after.event_initialized['dapui_config'] = dapui.open
     dap.listeners.before.event_terminated['dapui_config'] = dapui.close
     dap.listeners.before.event_exited['dapui_config'] = dapui.close
+    dap.listeners.after.event_initialized['set_run_flag'] = function()
+      _G.dap_has_run = true
+    end
+
 
     -- Install golang specific config
-    require('dap-go').setup {
-      delve = {
-        -- On Windows delve must be run attached or it crashes.
-        -- See https://github.com/leoluz/nvim-dap-go/blob/main/README.md#configuring
-        detached = vim.fn.has 'win32' == 0,
-      },
+    -- require('dap-go').setup {
+    --   delve = {
+    --     -- On Windows delve must be run attached or it crashes.
+    --     -- See https://github.com/leoluz/nvim-dap-go/blob/main/README.md#configuring
+    --     detached = vim.fn.has 'win32' == 0,
+    --   },
+    -- }
+
+    -- C for embedded system
+    dap.adapters.cppdbg = {
+      id = 'cppdbg',
+      type = 'executable',
+      command = vim.fn.stdpath('data') .. '/mason/packages/cpptools/extension/debugAdapters/bin/OpenDebugAD7',
     }
+
+    local function find_main()
+      local search_path = vim.fn.getcwd() .. "/**/";
+      local main_file = vim.fn.glob(search_path .. "main", true, true)
+    end
+
+    local function find_elf(prompt_msg)
+      local search_path = vim.fn.getcwd() .. "/build/"
+      local elf_files = vim.fn.glob(search_path .. '*.elf', true, true)
+
+      if #elf_files == 1 then
+        return elf_files[1]
+      else
+        if #elf_files == 0 then
+          print("Cannot find ELF file in: " .. search_path)
+        else
+          print("Multiple ELF file..")
+        end
+        return vim.fn.input(prompt_msg, search_path, 'file')
+      end
+    end
+
+    local original_run = dap.run
+    dap.run = function(config, opts)
+      if config.build_command then
+        print("Building session: [" .. config.name .. "]...")
+        vim.fn.jobstart(config.build_command, {
+          on_exit = function(_, code)
+            if code == 0 then
+              print("Start debugging")
+              original_run(config, opts)
+            else
+              vim.notify("Building error", vim.log.levels.ERROR)
+            end
+          end,
+          stdout_buffered = true,
+          stderr_buffered = true,
+        })
+      else
+        original_run(config, opts)
+      end
+    end
+
+    dap.configurations.c = {
+      {
+        name = "Native GDB",
+        type = "cppdbg",
+        request = "launch",
+        program = "main",
+        cwd = '${workspaceFolder}',
+        stopAtEntry = true,
+        miDebuggerPath = "gdb",
+        setupCommands = {
+          { text = '-enable-pretty-printing', description = 'Enable pretty printing', ignoreFailures = false },
+        },
+      },
+      {
+        name = "ARM Cortex GDB",
+        type = "cortex-debug",
+        request = "launch",
+        servertype="external",
+        gdbTarget = "localhost:3333",
+        -- svdFile = "${env:PICO_SDK_PATH}/src/rp2040/hardware_regs/rp2040.svd",
+        cwd = '${workspaceFolder}',
+        executable = function()
+          return find_elf("ELF file path (Cortex)")
+        end,
+        gdbPath = "gdb-multiarch",
+        runToEntryPoint = "main",
+        timeout = 10000,
+        build_command = "cmake --build build -j8",
+      },
+      {
+        name = "ESP32 GDB (Fix)",
+        type = "cortex-debug",
+        request = "launch",
+        servertype="external",
+        gdbTarget = "localhost:3333",
+        -- svdFile = "${env:PICO_SDK_PATH}/src/rp2040/hardware_regs/rp2040.svd",
+        cwd = '${workspaceFolder}',
+        gdbPath = "riscv32-esp-elf-gdb",
+        runToEntryPoint = "app_main",
+        executable = function()
+          return find_elf("ELF file path (ESP32)")
+        end,
+        preLaunchCommands = {
+          "monitor reset halt",
+        },
+        postRestartCommands = {
+          "monitor reset halt"
+        },
+        build_command = "idf.py build",
+      },
+      {
+        name = "ESP32 GDB (Demand idf OpenOCD)",
+        type = "cppdbg",
+        request = "launch",
+        program = function()
+          return find_elf("ELF file path (ESP32)")
+        end,
+        cwd = '${workspaceFolder}',
+        stopAtEntry = false,
+        miDebuggerPath = "riscv32-esp-elf-gdb",
+        setupCommands = {
+          { text = '-enable-pretty-printing', description = 'Enable pretty printing', ignoreFailures = false },
+          { text = 'set remotetimeout 20', description = 'Set timeout', ignoreFailures = true },
+          { text = 'target remote localhost:3333', description = 'Connect to OpenOCD', ignoreFailures = false },
+          { text = 'monitor reset halt', description = 'Reset target', ignoreFailures = false },
+          { text = 'load', description = 'Flash binary to target', ignoreFailures = false },
+          { text = 'monitor reset halt', description = 'Reset after flash', ignoreFailures = false },
+          { text = 'flushregs', description = 'Flush registers', ignoreFailures = true },
+        },
+        -- launchCompleteCommand = "exec-continue",
+        launchCompleteCommand = "None",
+        build_command = "idf.py build",
+      }
+    }
+    -- Cpp for embedded
+    dap.configurations.cpp = dap.configurations.c
   end,
 }

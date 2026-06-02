@@ -6,11 +6,11 @@ setopt appendhistory autocd nobeep extendedglob nomatch notify
 
 # Plugins:
 eval "$(zoxide init --cmd cd zsh)"
-source ~/.config/zsh/zsh-autocomplete/zsh-autocomplete.plugin.zsh 
+source ~/.config/zsh/zsh-autocomplete/zsh-autocomplete.plugin.zsh
 source ~/.config/zsh/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh
 source ~/.config/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh
 
-# Binds for ZSH autocomplete 
+# Binds for ZSH autocomplete
 bindkey "\t" menu-complete "$terminfo[kcbt]" reverse-menu-complete
 bindkey "^[[A" history-beginning-search-backward
 bindkey "^[[B" history-beginning-search-forward
@@ -45,6 +45,10 @@ setopt hist_verify
 setopt hist_expire_dups_first
 
 setopt push_d_ignore_dups
+setopt pushdminus
+
+# Try fix issue: _zsh_highlight:111: cannot duplicate fd 1
+ulimit -n 4096
 
 # Load my functions and aliases
 source "$HOME/.config/zsh/colors.sh"

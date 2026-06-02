@@ -19,6 +19,8 @@
 \newcommand{\centerY}[2]{\multirow{#1}{*}{#2}}
 
 \usepackage{wrapfig}
+\usepackage{graphicx}
+\graphicspath{{./Img/}}
 
 \usepackage{hyperref}
 \hypersetup{
@@ -87,16 +89,8 @@ literate=%
 
 
 \begin{document}
-    \begin{minipage}[t][0.45\textheight]{\textwidth}
-        \Large
-        \noindent{\textbf{Technika Mikroprocesorowa test 1}\hfill \today}
-        \medskip\hrule
-    \end{minipage}
-    \hrule\vspace{1cm}
-    \begin{minipage}[t][0.45\textheight]{\textwidth}
-        \Large
-        \noindent{\textbf{Technika Mikroprocesorowa test 1}\hfill \today}
-        \medskip\hrule
-    \end{minipage}
-    \pagestyle{empty}
+    \pagenumbering{gobble}
+    \Large
+    \noindent{\textbf{Technika Mikroprocesorowa test 1}\hfill \today}
+    \medskip\hrule\vspace{0.5cm}
 \end{document}

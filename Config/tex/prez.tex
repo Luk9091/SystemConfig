@@ -3,6 +3,31 @@
 \usepackage[utf8]{inputenc}
 \usepackage{polski}
 \usepackage{babel}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage{pdfpages}
+
+
+
+\usepackage{tabularx}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcommand{\centerY}[2]{\multirow{#1}{*}{#2}}
+
+\usepackage{wrapfig}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks = true,
+    urlcolor=blue,
+    linkcolor= black
+}
+
 
 \usepackage{graphicx}
 \graphicspath{{./Img/}}
@@ -12,7 +37,12 @@
 \usepackage{pgfplots}
 \usepackage{pgfplotstable}
 
-\usepackage[european, american inductor]{circuitikz}
+\usepackage[european, american currents, americanvoltages, RPvoltages, cute inductor]{circuitikz}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric}
+\ctikzset{
+    logic ports=ieee,
+}
 \pgfplotsset{compat=1.18}
 
 

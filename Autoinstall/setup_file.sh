@@ -7,6 +7,7 @@ ZSH_PATH=$CONFIG_PATH/zsh
 TEX_PATH=$CONFIG_PATH/tex
 VIM_PATH=$CONFIG_PATH/nvim
 CAD_PATH=$CONFIG_PATH/FreeCAD
+CLANGD_PATH=$CONFIG_PATH/clangd
 
 
 # zsh
@@ -34,6 +35,8 @@ fi
 # nVim path
 echo -e "Link nVim"
 ln -sf $VIM_PATH "${HOME}/.config/"
+#clangd
+ln -sf $CLANGD_PATH "${HOME}/.config/"
 
 # Tex
 echo -e "Link tex"
@@ -45,5 +48,6 @@ ln -sf $TEX_PATH "${HOME}/.config/"
 #    rm -r "${HOME}/.var/app/org.freecad.FreeCAD/config/FreeCAD" 2> /dev/null
 #    ln -sf $CAD_PATH "${HOME}/.var/app/org.freecad.FreeCAD/config/"
 # fi
+
 
 popd >> /dev/null

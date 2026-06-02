@@ -43,6 +43,7 @@ vim.o.showmode = false
 
 -- Enable break indent
 vim.o.breakindent = true
+vim.o.autoindent = false
 vim.o.smartindent = false
 -- Save undo history
 vim.o.undofile = true
@@ -617,7 +618,11 @@ require("lazy").setup({
                 "--header-insertion=never",
                 "--background-index",
                 "--clang-tidy",
-                "--query-driver=**/*gcc,**/*g++,**/*avr-gcc,**/*avr-g++",
+                "--query-driver=**/*gcc,**/*g++,"
+                  .."**/*avr-gcc,**/*avr-g++,"
+                  .."**/*esp-elf-*,**/*xtensa-esp32-elf-*",
+                "--all-scopes-completion",
+                "--completion-style=detailed",
               },
             },
             pyright = {
@@ -876,7 +881,7 @@ require("lazy").setup({
               "folke/todo-comments.nvim",
               event = "VimEnter",
               dependencies = { "nvim-lua/plenary.nvim" },
-              opts = { signs = false },
+              opts = {signs = false},
             },
 
             { -- Collection of various small independent plugins/modules
@@ -955,7 +960,7 @@ require("lazy").setup({
             -- require 'kickstart.plugins.lint',
             require("kickstart.plugins.autopairs"),
             -- require 'kickstart.plugins.neo-tree',
-            -- require("kickstart.plugins.gitsigns"), -- adds gitsigns recommend keymaps
+            require("kickstart.plugins.gitsigns"), -- adds gitsigns recommend keymaps
 
             -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
             --    This is the easiest way to modularize your config.
