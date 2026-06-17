@@ -1,0 +1,52 @@
+#! /usr/bin/env bash
+
+audio(){
+    declare -A DEVICES=(
+        ["jbl"]="bluez_output.84_D3_52_4D_1E_E3.1"
+        ["edi"]="bluez_output.CC_14_BC_9B_A4_47.1"
+        ["default"]="bluez_output.84_D3_52_4D_1E_E3.1"
+    )
+
+    local DEV="default"
+    local VOLUME=""
+    local MUTE=0
+
+    # Parsowanie argumentów
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --mute)
+                MUTE=1
+                shift
+                ;;
+            --volume=*)
+                VOLUME="${1#*=}"
+                shift
+                ;;
+            --volume)
+                VOLUME="$2"
+                shift 2
+                ;;
+            *)
+                DEV=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+                shift
+                ;;
+        esac
+    done
+
+    local SINK="$DEVICES[$DEV]"
+    if [[ -z "$SINK" ]]; then
+        echo -e "Unknown device $DEV"
+        return 1
+    fi
+
+    echo "Change audio to: ${DEV}"
+    pactl set-default-sink "$SINK"
+
+    if [[ $MUTE -eq 1 ]]; then
+        pactl set-sink-mute "$SINK" toggle
+    fi
+    if [[ -n "$VOLUME" ]]; then
+        pactl set-sink-mute "$SINK" false
+        pactl set-sink-volume "$SINK" "${VOLUME}%"
+    fi
+}

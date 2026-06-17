@@ -1,0 +1,72 @@
+#compdef ollama
+
+_ollama_commands() {
+    local -a cmds
+
+
+    cmds=(
+        "serve:Start Ollama"
+        "create:Create a model"
+        "show:Show information for a model"
+        "run:Run a model"
+        "stop:Stop a running model"
+        "pull:Pull a model from a registry"
+        "push:Push a model to a registry"
+        "signin:Sign in to ollama.com"
+        "signout:Sign out from ollama.com"
+        "list:List models"
+        "ps:List running models"
+        "cp:Copy a model"
+        "rm:Remove a model"
+        "launch:Launch the Ollama menu or an integration"
+        "help:Help about any command"
+    )
+
+    _describe 'ollama commands' cmds
+}
+
+_ollama_models() {
+  local -a models raw
+
+  raw=("${(@f)$(ollama list 2>/dev/null | awk 'NR>1 {print $1}')}")
+
+  models=()
+  for m in $raw; do
+    models+=("${m//:/\\:}")
+  done
+
+  _values 'models' $models
+}
+
+_ollama() {
+    local state
+
+    _arguments -C \
+        '1: :_ollama_commands' \
+        '2: :->subcmd' \
+        '*::arg:->args'
+
+    case $state in
+        subcmd)
+            case $words[2] in
+                run|rm|show|stop)
+                    _ollama_models
+                    ;;
+            esac
+            ;;
+        args)
+            case $words[2] in
+                run)
+                    # run <model> [prompt...]
+                    ;;
+                rm)
+                    _message "model to remove"
+                    ;;
+                *)
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+_ollama

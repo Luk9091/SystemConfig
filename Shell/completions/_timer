@@ -1,4 +1,4 @@
-#compdef timeG
+#compdef timer
 
 _timer() {
     _arguments -S -A "-*" \

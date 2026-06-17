@@ -1,0 +1,33 @@
+#compdef audio
+
+_audio() {
+    local -a devices
+    devices=(
+        JBL
+        EDI
+        default
+    )
+
+    local -a opts
+    opts=(
+        '--mute[Toggle mute]'
+        '--volume=[Set volume percentage]:volume (0-100):'
+    )
+
+    _arguments -C \
+        '1:device:->device' \
+        '*::options:->opts'
+
+    case $state in
+        device)
+            _describe 'device' devices
+            ;;
+        opts)
+            _arguments \
+                '--mute[Toggle mute]' \
+                '--volume=[Set volume percentage]:volume (0-100):'
+            ;;
+    esac
+}
+
+compdef _audio audio
