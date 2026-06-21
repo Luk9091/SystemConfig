@@ -1,3 +1,5 @@
+local selected_elf_path = ""
+
 return {
     {
         name = "ESP32C3 GDB",
@@ -7,17 +9,23 @@ return {
         gdbTarget = "localhost:3333",
         cwd = '${workspaceFolder}',
         executable = function()
-          return _G.find_elf("ELF file path (ESP32)")
+          selected_elf_path = _G.find_elf("ELF file path (ESP32)")
+          return selected_elf_path
         end,
         gdbPath = "riscv32-esp-elf-gdb",
         toolchainPath = "",
-        timeout = 10000,
+        timeout = 50000,
         build_command = "idf.py build",
-        overrideLaunchCommands = {
-          "target extended-remote :3333",
-          "mon reset halt",
-          "thb app_main",
-        },
+        overrideLaunchCommands = function()
+            local bin_file = selected_elf_path:gsub("%.elf", ".bin")
+            return {
+              "target extended-remote :3333",
+              "mon reset halt",
+              "mon program_esp " .. bin_file .. " 0x10000 verify",
+              "mon reset halt",
+              "thb app_main",
+          }
+        end,
         postLaunchCommands = {},
       }
 }

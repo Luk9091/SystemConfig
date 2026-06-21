@@ -1,6 +1,6 @@
 return {
     {
-      name = "ARM Cortex GDB (Check if work)",
+      name = "ARM Cortex GDB",
       type = "cortex-debug",
       request = "launch",
       servertype="external",
@@ -16,6 +16,7 @@ return {
       overrideLaunchCommands = {
         "target extended-remote :3333",
         "mon reset halt",
+        "load",
         "thb main",
       },
       postLaunchCommands = {},
