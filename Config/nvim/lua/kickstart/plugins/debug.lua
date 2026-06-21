@@ -182,7 +182,7 @@ return {
       local main_file = vim.fn.glob(search_path .. "main", true, true)
     end
 
-    local function find_elf(prompt_msg)
+    _G.find_elf = function(prompt_msg)
       local search_path = vim.fn.getcwd() .. "/build/"
       local elf_files = vim.fn.glob(search_path .. '*.elf', true, true)
 
@@ -232,73 +232,16 @@ return {
           { text = '-enable-pretty-printing', description = 'Enable pretty printing', ignoreFailures = false },
         },
       },
-      {
-        name = "ARM Cortex GDB (Check if work)",
-        type = "cortex-debug",
-        request = "launch",
-        servertype="external",
-        gdbTarget = "localhost:3333",
-        cwd = '${workspaceFolder}',
-        executable = function()
-          return find_elf("ELF file path (Cortex)")
-        end,
-        gdbPath = "gdb-multiarch",
-        runToEntryPoint = "main",
-        timeout = 10000,
-        build_command = "cmake --build build -j8",
-        overrideLaunchCommands = {
-          "target extended-remote :3333",
-          "mon reset halt",
-          "thb main",
-          "continue"
-        },
-        postLaunchCommands = {},
-      },
-      {
-        name = "ESP32C3 GDB",
-        type = "cortex-debug",
-        request = "launch",
-        servertype = "external",
-        gdbTarget = "localhost:3333",
-        cwd = '${workspaceFolder}',
-        executable = function()
-          return find_elf("ELF file path (ESP32)")
-        end,
-        gdbPath = "riscv32-esp-elf-gdb",
-        toolchainPath = "",
-        timeout = 10000,
-        build_command = "idf.py build",
-        overrideLaunchCommands = {
-          "target extended-remote :3333",
-          "mon reset halt",
-          "thb app_main",
-          "continue"
-        },
-        postLaunchCommands = {},
-      },
-      -- {
-      --   name = "ESP32S3 GDB",
-      --   type = "cortex-debug",
-      --   request = "launch",
-      --   servertype = "external",
-      --   gdbTarget = "localhost:3333",
-      --   cwd = '${workspaceFolder}',
-      --   executable = function()
-      --     return find_elf("ELF file path (ESP32)")
-      --   end,
-      --   gdbPath = "xtensa-esp32s3-elf-gdb",
-      --   toolchainPath = "",
-      --   timeout = 10000,
-      --   build_command = "idf.py build",
-      --   overrideLaunchCommands = {
-      --     "target extended-remote :3333",
-      --     "mon reset halt",
-      --     "thb app_main",
-      --     "continue"
-      --   },
-      --   postLaunchCommands = {},
-      -- }
     }
+
+    local arm_cfg = require('kickstart.plugins.upDebugConfig.arm')
+    local esp32c3_cfg = require('kickstart.plugins.upDebugConfig.esp32c3')
+    local esp32s3_cfg = require('kickstart.plugins.upDebugConfig.esp32s3')
+
+    vim.list_extend(dap.configurations.c , arm_cfg)
+    vim.list_extend(dap.configurations.c , esp32c3_cfg)
+    -- vim.list_extend(dap.configurations.c , esp32s3_cfg)
+
     -- Cpp for embedded
     dap.configurations.cpp = dap.configurations.c
   end,
