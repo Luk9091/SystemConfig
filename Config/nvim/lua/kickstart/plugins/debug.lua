@@ -233,12 +233,11 @@ return {
         },
       },
       {
-        name = "ARM Cortex GDB",
+        name = "ARM Cortex GDB (Check if work)",
         type = "cortex-debug",
         request = "launch",
         servertype="external",
         gdbTarget = "localhost:3333",
-        -- svdFile = "${env:PICO_SDK_PATH}/src/rp2040/hardware_regs/rp2040.svd",
         cwd = '${workspaceFolder}',
         executable = function()
           return find_elf("ELF file path (Cortex)")
@@ -247,51 +246,58 @@ return {
         runToEntryPoint = "main",
         timeout = 10000,
         build_command = "cmake --build build -j8",
+        overrideLaunchCommands = {
+          "target extended-remote :3333",
+          "mon reset halt",
+          "thb main",
+          "continue"
+        },
+        postLaunchCommands = {},
       },
       {
-        name = "ESP32 GDB (Fix)",
+        name = "ESP32C3 GDB",
         type = "cortex-debug",
         request = "launch",
-        servertype="external",
+        servertype = "external",
         gdbTarget = "localhost:3333",
-        -- svdFile = "${env:PICO_SDK_PATH}/src/rp2040/hardware_regs/rp2040.svd",
         cwd = '${workspaceFolder}',
-        gdbPath = "riscv32-esp-elf-gdb",
-        runToEntryPoint = "app_main",
         executable = function()
           return find_elf("ELF file path (ESP32)")
         end,
-        preLaunchCommands = {
-          "monitor reset halt",
-        },
-        postRestartCommands = {
-          "monitor reset halt"
-        },
+        gdbPath = "riscv32-esp-elf-gdb",
+        toolchainPath = "",
+        timeout = 10000,
         build_command = "idf.py build",
+        overrideLaunchCommands = {
+          "target extended-remote :3333",
+          "mon reset halt",
+          "thb app_main",
+          "continue"
+        },
+        postLaunchCommands = {},
       },
-      {
-        name = "ESP32 GDB (Demand idf OpenOCD)",
-        type = "cppdbg",
-        request = "launch",
-        program = function()
-          return find_elf("ELF file path (ESP32)")
-        end,
-        cwd = '${workspaceFolder}',
-        stopAtEntry = false,
-        miDebuggerPath = "riscv32-esp-elf-gdb",
-        setupCommands = {
-          { text = '-enable-pretty-printing', description = 'Enable pretty printing', ignoreFailures = false },
-          { text = 'set remotetimeout 20', description = 'Set timeout', ignoreFailures = true },
-          { text = 'target remote localhost:3333', description = 'Connect to OpenOCD', ignoreFailures = false },
-          { text = 'monitor reset halt', description = 'Reset target', ignoreFailures = false },
-          { text = 'load', description = 'Flash binary to target', ignoreFailures = false },
-          { text = 'monitor reset halt', description = 'Reset after flash', ignoreFailures = false },
-          { text = 'flushregs', description = 'Flush registers', ignoreFailures = true },
-        },
-        -- launchCompleteCommand = "exec-continue",
-        launchCompleteCommand = "None",
-        build_command = "idf.py build",
-      }
+      -- {
+      --   name = "ESP32S3 GDB",
+      --   type = "cortex-debug",
+      --   request = "launch",
+      --   servertype = "external",
+      --   gdbTarget = "localhost:3333",
+      --   cwd = '${workspaceFolder}',
+      --   executable = function()
+      --     return find_elf("ELF file path (ESP32)")
+      --   end,
+      --   gdbPath = "xtensa-esp32s3-elf-gdb",
+      --   toolchainPath = "",
+      --   timeout = 10000,
+      --   build_command = "idf.py build",
+      --   overrideLaunchCommands = {
+      --     "target extended-remote :3333",
+      --     "mon reset halt",
+      --     "thb app_main",
+      --     "continue"
+      --   },
+      --   postLaunchCommands = {},
+      -- }
     }
     -- Cpp for embedded
     dap.configurations.cpp = dap.configurations.c
